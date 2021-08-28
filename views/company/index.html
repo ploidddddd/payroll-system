@@ -1,0 +1,302 @@
+{{extend 'layout.html'}}
+
+<div id="companyApp">
+    <button type="button" class="btn btn-primary">DESLECT ALL</button>
+    <h1>COMPANY</h1>
+    <button @click="addCompMode()" type="button" class="btn btn-primary">ADD COMPANY</button>
+    <button @click="editCompMode()" type="button" class="btn btn-primary">EDIT MODE</button>
+    
+
+    <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Company Name</th>
+            <th scope="col">Description</th>
+            <th scope="col">Option</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="com,i in companies  ">
+            <th scope="row" >[[com.id]]</th>
+            <td>
+                <span v-if="!editCompanyMode">[[com.company_name]]</span>
+                <input v-else type="text" class="form-control" v-model="companies[i].company_name" @change='updateCompany(com)' aria-label="Username" aria-describedby="basic-addon1">
+                
+            </td>
+            <td>
+                <span v-if="!editCompanyMode"> [[com.company_description]]</span>
+                <input v-else type="text" class="form-control" v-model="companies[i].company_description" @change='updateCompany(com)' aria-label="Username" aria-describedby="basic-addon1">
+            </td>
+            <td>
+                <button @click="selectCompany(com)" type="button" class="btn btn-secondary">SELECT</button>
+               
+                <button @click="deleteCompany(com)" type="button" class="btn btn-danger">DELETE</button>
+            </td>
+          </tr>
+          <tr v-if="addCompanyMode">
+            <th scope="row" ></th>
+            <td>
+                <input type="text" class="form-control" v-model="company.company_name" aria-label="Username" aria-describedby="basic-addon1">
+            </td>
+            <td>
+                <input type="text" class="form-control" v-model="company.company_description" aria-label="Username" aria-describedby="basic-addon1">
+            </td>
+            <td>
+                <button  @click="addCompany" type="button" class="btn btn-primary">ADD</button>
+                
+            </td>
+          </tr>
+        </tbody>
+      </table >
+    
+      <h1 v-show="selectedCompany.id != 0">DEPARMENTS</h1>
+      <button @click="addDeptMode()" type="button" class="btn btn-primary" v-show="selectedCompany.id != 0">ADD DEPARMENT</button>
+      <button @click="editDeptMode()" type="button" class="btn btn-primary" v-show="selectedCompany.id != 0">EDIT MODE</button>
+
+      <table class="table" v-show="selectedCompany.id != 0">
+          
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Deparment Name</th>
+            <th scope="col">Description</th>
+            <th scope="col">Option</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="dept,i in departments  ">
+            <th scope="row" >[[dept.id]]</th>
+            <td>
+                <span v-if="!editDepartmentMode">[[dept.department_name]]</span>
+                <input v-else type="text" class="form-control" v-model="departments[i].department_name" @change='updateDepartment(dept)' aria-label="Username" aria-describedby="basic-addon1">
+               
+            </td>
+            <td>
+                <span v-if="!editDepartmentMode">[[dept.department_description]]</span>
+                <input v-else type="text" class="form-control" v-model="departments[i].department_description" @change='updateDepartment(dept)' aria-label="Username" aria-describedby="basic-addon1">
+               
+            </td>
+            <td>
+                <button @click="selectDepartment(dept)" type="button" class="btn btn-secondary">SELECT</button>
+                <button type="button" class="btn btn-danger">DELETE</button>
+            </td>
+          </tr>
+          <tr v-if="addDepartmentMode">
+            <th scope="row" ></th>
+            <td>
+                <input type="text" class="form-control" v-model="department.department_name" aria-label="Username" aria-describedby="basic-addon1">
+            </td>
+            <td>
+                <input type="text" class="form-control" v-model="department.department_description" aria-label="Username" aria-describedby="basic-addon1">
+            </td>
+            <td>
+                
+                    
+                <select  v-model="department.company_id" class="form-control" id="exampleFormControlSelect1">
+                    <option v-for="comp in companies" :value="comp.id">[[comp.company_name]]</option>
+                   
+                </select>
+                    
+                
+            </td>
+            <td>
+                <button  @click="addDepartment" type="button" class="btn btn-primary">ADD DEPARTMENT</button>
+                
+            </td>
+          </tr>
+         
+        </tbody>
+      </table>
+
+      <h1 v-show="selectedDepartment.id != 0">DEPARMENTS</h1>
+      <button @click="addDeptMode()" type="button" class="btn btn-primary" v-show="selectedDepartment.id != 0">ADD DEPARMENT</button>
+      <button @click="editDeptMode()" type="button" class="btn btn-primary" v-show="selectedDepartment.id != 0">EDIT MODE</button>
+
+      <table class="table" v-show="selectedDepartment.id != 0">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Employee Name</th>
+            <th scope="col">Position</th>
+            <th scope="col">Option</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="emp,i in employees">
+            <th scope="row" >[[i+1]]</th>
+            <td>[[emp.employee_fname+' '+emp.employee_mname+' '+ emp.employee_last]]</td>
+            <td>[[emp.employee_position]]</td>
+            <td>
+                <button type="button" class="btn btn-primary">EDIT</button>
+                <button type="button" class="btn btn-danger">DELETE</button>
+            </td>
+          </tr>
+         
+        </tbody>
+      </table>
+    
+</div>
+
+
+<script>
+    const company = new Vue({
+        delimiters: ['[[',']]'],
+        el: '#companyApp',
+        data : {
+            companies : null,
+            departments : null,
+            allDepartments : null,
+            employees : null,
+            editCompanyMode : false,
+            addCompanyMode: false,
+            editDepartmentMode : false,
+            addDepartmentMode: false,
+            selectedCompany : {
+                id : 0,
+                company_name: '',
+                company_description: '',
+            },
+            selectedDepartment : {
+                id : 0
+            },
+            company : {
+                company_name : null,
+                company_description : null,
+            },
+            department : {
+                department_name : null,
+                department_description : null,
+                company_id : null,
+            }
+        },
+        mounted() {
+            this.getCompanies();
+            
+        },
+        methods: {
+            getCompanies : function (){
+                axios.get('/{{=request.application}}/api/v1/companies.json')
+                .then(function(response){
+                    console.log('response',response.data.data);
+                    company.companies = response.data.data;
+                })
+            },
+            selectCompany : function(data){
+                company.selectedCompany = data;
+                company.selectedCompany.compEditMode = false;
+                company.department.company_id = data.id;
+                company.getDeparments(data.id);
+            },
+            selectDepartment : function(data){
+                company.selectedDepartment = data;
+                company.getEmployees(data.id);
+                
+            },
+            getDeparments : function(id){
+                axios.get('/{{=request.application}}/api/v1/departments/company-id/'+ id +'.json')
+                .then(function(response){
+                    console.log('response',response.data.data);
+                    company.departments = response.data.data;
+                })
+            },
+            getAllDeparments : function(id){
+                axios.get('/{{=request.application}}/api/v1/departments.json')
+                .then(function(response){
+                    console.log('response',response.data.data);
+                    company.allDepartments = response.data.data;
+                })
+            },
+            getEmployees : function(id){
+                axios.get('/{{=request.application}}/api/v1/employees/department-id/'+ id +'.json')
+                .then(function(response){
+                    console.log('response',response.data.data);
+                    company.employees = response.data.data;
+                    company.employees.map(emp => {
+                        
+                        if(emp.employee_mname == null){
+                            emp.employee_mname = '';
+                        }
+                    })
+                })
+            },
+            editCompMode : function (data){
+
+                company.editCompanyMode = !company.editCompanyMode;
+            },
+            addCompMode : function (data){
+                company.addCompanyMode = !company.addCompanyMode;
+            },
+            editDeptMode : function (data){
+                company.editDepartmentMode = !company.editDepartmentMode;
+            },
+            addDeptMode : function (data){
+                company.addDepartmentMode = !company.addDepartmentMode;
+            },
+            addCompany: function(){
+                payload = {
+                    company_name : company.company.company_name,
+                    company_description : company.company.company_description
+                }
+                console.log('payload',payload);
+                axios.post('/{{=request.application}}/api/v1/companies.json',payload)
+                .then(function(response){
+                    console.log('response',response);
+                    company.getCompanies();
+                    company.addCompanyMode = !company.addCompanyMode;
+                })
+            },
+            addDepartment: function(){
+                payload = {
+                    department_name : company.department.department_name,
+                    department_description : company.department.department_description,
+                    company_id : company.department.company_id
+                }
+                console.log('payload',payload);
+                axios.post('/{{=request.application}}/api/v1/departments.json',payload)
+                .then(function(response){
+                    console.log('response',response);
+                    company.getDeparments(company.selectedCompany.id);
+                    company.addDepartmentMode = !company.addDepartmentMode;
+                })
+            },
+            updateCompany: function(data){
+                payload = {
+                    id : data.id,
+                    company_name : data.company_name,
+                    company_description : data.company_description
+                }
+                console.log('payload',payload);
+                axios.put('/{{=request.application}}/api/v1/companies.json',payload)
+                .then(function(response){
+                    console.log('response',response);
+                    company.getCompanies();
+                })
+            },
+            updateDepartment: function(data){
+                payload = {
+                    id : data.id,
+                    department_name : data.department_name,
+                    department_description : data.department_description,
+                    company_id : data.company_id
+                }
+                console.log('payload',payload);
+                axios.put('/{{=request.application}}/api/v1/departments.json',payload)
+                .then(function(response){
+                    console.log('response',response);
+                    company.getDeparments(data.company_id);
+                })
+            },
+            deleteCompany: function(data){
+               var id = data.id
+                console.log('payload',id);
+                axios.delete('/{{=request.application}}/api/v1/companies/'+id+'.json')
+                .then(function(response){
+                    console.log('response',response);
+                    company.getCompanies();
+                })
+            }
+        }
+
+    })
+</script>
