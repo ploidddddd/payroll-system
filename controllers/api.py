@@ -87,17 +87,17 @@ def v1():
         except:
              return dict(status="fail", message=T('SERVER OR DATABASE ERROR'))
     
-    def DELETE(table_name,*args, **vars):
+    def DELETE(table_name,*args):
         response.view = 'generic.' + request.extension
 
-        if len(args)>0 and args[0] not in plurals.keys():
+        if table_name not in plurals.keys():
             return dict(status="fail",data='no matching pattern, use plural')
 
         if table_name in plurals.keys():
             table_name = plurals[table_name].replace('_','-')
         
         # check id if included in parameters
-        id = int(vars['id'] or 0) if 'id' in vars else 0
+        id = int(args[0] or 0) if len(args) else 0
         if id == 0:
              return dict(status="fail", message=T('Record ID is required'))
 

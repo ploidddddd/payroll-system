@@ -28,7 +28,7 @@ db.define_table('employee',
     Field('employee_fname','string',length=20, requires=IS_NOT_EMPTY(), required=True, label=T('Employee First Name')),
     Field('employee_mname','string',length=20, required=False, label=T('Employee Middle Name')),
     Field('employee_last','string',length=20, requires=IS_NOT_EMPTY(), required=True, label=T('Employee Last Name')),
-    Field('employee_position', 'string', length=20, required=False, label=T('Deparment Position')),
+    Field('employee_position', 'string', length=20, requires=IS_NOT_EMPTY(), required=True, label=T('Deparment Position')),
     Field('department_id', 'references department', requires=IS_IN_DB(db, 'department.id', '%(department_name)s'), required=True, label=T('Department '))
 )
 
