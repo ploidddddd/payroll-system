@@ -1,0 +1,192 @@
+{{extend 'layout.html'}}
+
+<div id="companyApp">
+    <button type="button" class="btn btn-primary">DESLECT ALL</button>
+    <h1>COMPANY</h1>
+    <button type="button" class="btn btn-primary">ADD COMPANY</button>
+    <button @click="editCompMode()" type="button" class="btn btn-primary">EDIT MODE</button>
+    
+
+    <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Company Name</th>
+            <th scope="col">Description</th>
+            <th scope="col">Option</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="com,i in companies  ">
+            <th scope="row" >[[com.id]]</th>
+            <td>
+                <span v-if="!editCompanyMode">[[com.company_name]]</span>
+                <input v-else type="text" class="form-control" v-model="companies[i].company_name" @change='updateCompany(com)' aria-label="Username" aria-describedby="basic-addon1">
+                
+            </td>
+            <td>
+                <span v-if="!editCompanyMode"> [[com.company_description]]</span>
+                <input v-else type="text" class="form-control" v-model="companies[i].company_description" @change='updateCompany(com)' aria-label="Username" aria-describedby="basic-addon1">
+            </td>
+            <td>
+                <button @click="selectCompany(com)" type="button" class="btn btn-secondary">SELECT</button>
+               
+                <button @click="deleteCompany(com)" type="button" class="btn btn-danger">DELETE</button>
+            </td>
+          </tr>
+         
+        </tbody>
+      </table >
+
+      <table class="table" v-show="selectedCompany.id != 0">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Deparment Name</th>
+            <th scope="col">Description</th>
+            <th scope="col">Option</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="dept,i in departments  ">
+            <th scope="row" >[[i+1]]</th>
+            <td>[[dept.department_name]]</td>
+            <td>[[dept.department_description]]</td>
+            <td>
+                <button @click="selectDepartment(dept)" type="button" class="btn btn-secondary">SELECT</button>
+                <button type="button" class="btn btn-primary">EDIT</button>
+                <button type="button" class="btn btn-danger">DELETE</button>
+            </td>
+          </tr>
+         
+        </tbody>
+      </table>
+
+      <table class="table" v-show="selectedDepartment.id != 0">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Employee Name</th>
+            <th scope="col">Description</th>
+            <th scope="col">Option</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="emp,i in employees">
+            <th scope="row" >[[i+1]]</th>
+            <td>[[emp.employee_fname +' '+ emp.employee_last]]</td>
+            <td>[[emp.employee_position]]</td>
+            <td>
+                <button type="button" class="btn btn-primary">EDIT</button>
+                <button type="button" class="btn btn-danger">DELETE</button>
+            </td>
+          </tr>
+         
+        </tbody>
+      </table>
+    <div class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">Modal title</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <p>Modal body text goes here.</p>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-primary">Save changes</button>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+        </div>
+    </div>
+    </div>
+</div>
+
+
+<script>
+    const company = new Vue({
+        delimiters: ['[[',']]'],
+        el: '#companyApp',
+        data : {
+            companies : null,
+            departments : null,
+            employees : null,
+            editCompanyMode : false,
+            selectedCompany : {
+                id : 0,
+                company_name: '',
+                company_description: '',
+            },
+            selectedDepartment : {
+                id : 0
+            }
+        },
+        mounted() {
+            this.getCompanies();
+            
+        },
+        methods: {
+            getCompanies : function (){
+                axios.get('/{{=request.application}}/api/v1/companies.json')
+                .then(function(response){
+                    console.log('response',response.data.data);
+                    company.companies = response.data.data;
+                })
+            },
+            selectCompany : function(data){
+                company.selectedCompany = data;
+                company.selectedCompany.compEditMode = false;
+                company.getDeparments(data.id);
+            },
+            selectDepartment : function(data){
+                company.selectedDepartment = data;
+                company.getEmployees(data.id);
+            },
+            getDeparments : function(id){
+                axios.get('/{{=request.application}}/api/v1/departments/company-id/'+ id +'.json')
+                .then(function(response){
+                    console.log('response',response.data.data);
+                    company.departments = response.data.data;
+                })
+            },
+            getEmployees : function(id){
+                axios.get('/{{=request.application}}/api/v1/employees/department-id/'+ id +'.json')
+                .then(function(response){
+                    console.log('response',response.data.data);
+                    company.employees = response.data.data;
+                })
+            },
+            editCompMode : function (data){
+
+                company.editCompanyMode = !company.editCompanyMode;
+            },
+            updateCompany: function(data){
+                payload = {
+                    id : data.id,
+                    company_name : data.company_name,
+                    company_description : data.company_description
+                }
+                console.log('payload',payload);
+                axios.put('/{{=request.application}}/api/v1/companies.json',payload)
+                .then(function(response){
+                    console.log('response',response);
+                })
+            },
+            deleteCompany: function(data){
+                payload = {
+                    id : data.id,
+                }
+                console.log('payload',payload);
+                axios.delete('/{{=request.application}}/api/v1/companies.json',id=data.id)
+                .then(function(response){
+                    console.log('response',response);
+                    company.getCompanies();
+                })
+            }
+        }
+
+    })
+</script>

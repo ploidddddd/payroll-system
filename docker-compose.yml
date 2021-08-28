@@ -1,0 +1,28 @@
+version: '3.1'
+
+services:
+  db:
+    image: mariadb
+    restart: always
+    volumes:
+      - /var/lib/payroll_system/mysql:/var/lib/mysql
+    environment: 
+      TZ: Asia/Tokyo
+      MYSQL_ROOT_PASSWORD: redenfloyd123
+      MYSQL_DATABASE: payrollsystemdb
+      MYSQL_USER: kaluha
+      MYSQL_PASSWORD: 20k4luh420
+
+  web:
+    build: .
+    image: rok/web2py:python3.7
+    restart: always    
+    volumes:
+      - ../payroll_system:/opt/web2py/applications/payroll_system
+    ports:
+      - 8380:8080
+      - 9090:9090
+    environment:
+      - TZ=Asia/Tokyo
+      - WEB2PY_PASSWORD=redenfloyd123
+      - WEB2PY_ADMIN_SECURITY_BYPASS=true
